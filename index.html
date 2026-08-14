@@ -7,13 +7,14 @@
 <title>8-Ball Tournament</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%231c1b19'/><circle cx='16' cy='16' r='7' fill='%23fff'/><text x='16' y='21' font-size='11' font-family='Arial' font-weight='bold' text-anchor='middle' fill='%231c1b19'>8</text></svg>">
 <style>
-/* ==== CONFIG IS AT THE BOTTOM OF THIS FILE — search for APP_CONFIG ==== */
+/* ==== CONFIG IS IN THE SCRIPT BELOW — search for APP_CONFIG ==== */
 :root{
   color-scheme: light;
   --bg:#f5f5f3; --card:#fff; --line:#e6e5e1; --line2:#f0efeb;
   --ink:#1c1b19; --mut:#6f6e69; --dim:#9a9892;
   --grn:#186a3b; --grn-l:#f1f8f3; --grn-b:#cfe3d4;
-  --red:#9a2020; --amb:#8a6d1f;
+  --red:#9a2020; --amb:#8a6d1f; --amb-l:#fdf6e6; --amb-b:#eadfc0;
+  --gld:#8a6a17;
   --r:12px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -26,12 +27,8 @@ body{
 }
 .wrap{max-width:640px;margin:0 auto;padding:0 12px 40px}
 
-/* header */
-header{
-  position:sticky;top:0;z-index:30;background:var(--bg);
-  padding:14px 12px 0;border-bottom:1px solid var(--line);
-  margin:0 -12px 14px;
-}
+header{position:sticky;top:0;z-index:30;background:var(--bg);padding:14px 12px 0;
+  border-bottom:1px solid var(--line);margin:0 -12px 14px}
 .htop{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto}
 .htop h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.2px;flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -40,13 +37,11 @@ header{
 .iconbtn{border:none;background:none;font-size:19px;padding:4px 6px;cursor:pointer;color:var(--mut);line-height:1}
 .tabs{display:flex;gap:2px;max-width:640px;margin:10px auto 0;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{
-  flex:1;min-width:60px;border:none;background:none;padding:9px 4px 10px;font:inherit;font-size:14px;
-  font-weight:600;color:var(--mut);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;
-}
+.tab{flex:1 0 auto;min-width:54px;border:none;background:none;padding:9px 8px 10px;font:inherit;font-size:14px;
+  font-weight:600;color:var(--mut);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
 .tab.on{color:var(--grn);border-bottom-color:var(--grn)}
+.tab .lk{opacity:.5}
 
-/* bits */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
 .muted{color:var(--mut);font-size:13px}
 .center{text-align:center}
@@ -55,19 +50,18 @@ button.b{font:inherit;font-size:15px;font-weight:600;padding:12px 16px;border-ra
 button.b.pri{background:var(--grn);border-color:var(--grn);color:#fff}
 button.b.dng{color:var(--red);border-color:#e9d6d6;background:transparent}
 button.b:active{transform:scale(.985)}
-button.b:disabled{opacity:.4;cursor:default}
 .stack{display:flex;flex-direction:column;gap:8px}
 .rowb{display:flex;gap:8px;flex-wrap:wrap}
-textarea,input[type=text],input[type=tel]{
-  width:100%;padding:11px;font:inherit;font-size:16px;border:1px solid var(--line);
+textarea,input{width:100%;padding:11px;font:inherit;font-size:16px;border:1px solid var(--line);
   border-radius:10px;background:#fdfdfc;color:var(--ink)}
 textarea{min-height:190px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;resize:vertical}
 .pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.3px;padding:2px 7px;border-radius:20px;
   background:var(--grn-l);color:var(--grn);border:1px solid var(--grn-b)}
+.pill.q{background:#eef4fb;color:#1d4e79;border-color:#cfdff0}
+.pill.g{background:#fbf5e4;color:var(--gld);border-color:#e8dbb4}
 .bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:10px}
 .bar>div{height:100%;background:var(--grn);transition:width .3s}
 
-/* standings */
 .gtitle{display:flex;justify-content:space-between;align-items:baseline;margin:20px 2px 8px}
 .gtitle h2{font-size:15px;margin:0;font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
@@ -79,28 +73,35 @@ td.l{text-align:left}
 td.pos{color:var(--dim);width:16px;text-align:left;font-size:12px}
 td.nm{font-weight:600;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr.top td{background:var(--grn-l)}
+tr.qual td{background:#f4f8fc}
 td.pts{font-weight:800}
 .legend{font-size:11px;color:var(--dim);margin-top:9px;line-height:1.5}
 
-/* matches */
 .m{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:8px;background:var(--card);
   display:block;width:100%;text-align:left;font:inherit;cursor:pointer}
-.m.play{cursor:pointer}
 .m.locked{cursor:default}
+.m.tbd{opacity:.6;border-style:dashed}
+.mlab{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);
+  margin-bottom:7px;display:flex;justify-content:space-between;gap:8px}
 .mtop{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
 .mtop .a{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtop .b{text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mtop .s{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;min-width:44px;text-align:center;
-  color:var(--dim)}
+.mtop .s{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;min-width:46px;text-align:center;color:var(--dim)}
 .m.done .s{color:var(--ink)}
 .win{font-weight:700}
-.games{margin-top:8px;padding-top:8px;border-top:1px solid var(--line2);
-  display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;color:var(--mut)}
+.tbdn{color:var(--dim);font-style:italic}
+.games{margin-top:8px;padding-top:8px;border-top:1px solid var(--line2);display:flex;gap:6px;flex-wrap:wrap;
+  font-size:11.5px;color:var(--mut)}
 .g{background:#f6f5f2;border-radius:6px;padding:2px 7px;white-space:nowrap}
 .g b{color:var(--ink);font-weight:600}
 .empty{color:var(--dim);font-size:12px;margin-top:7px}
+.rnd{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);
+  margin:20px 2px 9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.champ{background:linear-gradient(180deg,#fdfaf0,#fff);border-color:#e8dbb4}
+.seedgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:13px}
+.seed{display:flex;gap:7px;align-items:baseline;padding:4px 0}
+.seed b{color:var(--dim);font-size:11px;font-weight:700;min-width:20px}
 
-/* modal */
 .sheet{position:fixed;inset:0;z-index:60;display:none}
 .sheet.on{display:block}
 .scrim{position:absolute;inset:0;background:rgba(20,20,18,.42)}
@@ -110,8 +111,11 @@ td.pts{font-weight:800}
 @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
 .grab{width:36px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 12px}
 .gblock{border:1px solid var(--line);border-radius:11px;padding:11px;margin-bottom:10px}
-.gblock.off{opacity:.45}
-.glab{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+.gblock.off{opacity:.42}
+.gblock.warn{border-color:var(--amb-b);background:var(--amb-l)}
+.glab{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--dim);text-transform:uppercase;
+  margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+.glab .w{color:var(--amb);text-transform:none;letter-spacing:0;font-weight:600}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .pbtn{font:inherit;font-size:14px;font-weight:600;padding:11px 8px;border-radius:9px;border:1px solid var(--line);
   background:#fbfbf9;color:var(--ink);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:44px}
@@ -126,10 +130,10 @@ td.pts{font-weight:800}
   padding:10px 16px;border-radius:9px;font-size:14px;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s;
   max-width:90vw;text-align:center}
 .toast.on{opacity:1}
-.hide{display:none !important}
 .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--grn);
   border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
+code{background:#f2f1ee;padding:1px 4px;border-radius:4px;font-size:.9em}
 </style>
 </head>
 <body>
@@ -144,11 +148,8 @@ td.pts{font-weight:800}
   <div class="tabs" id="tabs"></div>
 </header>
 
-<div class="wrap">
-  <div id="view"></div>
-</div>
+<div class="wrap"><div id="view"></div></div>
 
-<!-- score sheet -->
 <div class="sheet" id="sheet">
   <div class="scrim" onclick="closeSheet()"></div>
   <div class="panel" id="panel"></div>
@@ -158,10 +159,8 @@ td.pts{font-weight:800}
 
 <script>
 /* ============================================================
-   APP_CONFIG — edit these two lines, then publish.
-   API_URL: paste the /exec URL from your Google Apps Script deployment.
-   TITLE  : whatever you want shown at the top.
-   You can also set the URL at runtime from the ⋯ menu (stored on your device).
+   APP_CONFIG — edit these two lines, then republish.
+   API_URL: the /exec URL from your Google Apps Script deployment.
    ============================================================ */
 var APP_CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbxWj32UBCUN_DWId_y7Y7xeYgFTmqtLWgpul2qAM0PTFLsCLc0nciLmik6TwEJfWLj9/exec",
@@ -173,45 +172,56 @@ var LS = { url:'p8_url', pin:'p8_pin', tab:'p8_tab' };
 var API = localStorage.getItem(LS.url) || APP_CONFIG.API_URL || '';
 var PIN = localStorage.getItem(LS.pin) || '';
 var L   = ['A','B','C','D'];
-var S   = null;                       // server state
+var GBO = 3;            // group matches: best of 3
+var KBO = 5;            // semis, final, 3rd place: best of 5
+var S   = null;
 var tab = localStorage.getItem(LS.tab) || 'A';
-var busy = false, sheetOpen = false, draft = null, lastRaw = '';
+var busy=false, sheetOpen=false, draft=null, lastRaw='', lastErr='';
 
-/* ---------- transport: JSONP (no CORS headaches) ---------- */
+/* ---------------- transport: JSONP ---------------- */
 var jseq = 0;
+function urlProblem(u){
+  if(!u) return 'No server URL set.';
+  if(!/^https:\/\/script\.google\.com\/macros\/s\//.test(u))
+    return 'That doesn’t look like an Apps Script web-app URL. It should start with https://script.google.com/macros/s/';
+  if(/\/dev(\?|$)/.test(u))
+    return 'You’ve used the /dev URL. That one only works while signed in as the script owner. Use the /exec URL.';
+  if(!/\/exec(\?|$)/.test(u)) return 'The URL should end in /exec';
+  return '';
+}
 function call(params){
   return new Promise(function(res, rej){
-    if(!API){ rej(new Error('No API URL set')); return; }
+    var bad = urlProblem(API);
+    if(bad){ rej(new Error(bad)); return; }
     var cb = 'p8cb' + (++jseq) + '_' + Date.now();
     var s = document.createElement('script');
-    var to = setTimeout(function(){ cleanup(); rej(new Error('Timed out')); }, 20000);
+    var to = setTimeout(function(){ cleanup(); rej(new Error('Timed out — the server didn’t answer.')); }, 20000);
     function cleanup(){ clearTimeout(to); try{ delete window[cb]; }catch(e){ window[cb]=undefined; }
       if(s.parentNode) s.parentNode.removeChild(s); }
     window[cb] = function(d){ cleanup(); res(d); };
     var q = Object.keys(params).map(function(k){
       return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
     s.src = API + (API.indexOf('?')>-1?'&':'?') + q + '&callback=' + cb + '&_=' + Date.now();
-    s.onerror = function(){ cleanup(); rej(new Error('Network error')); };
+    s.onerror = function(){ cleanup(); rej(new Error('Server rejected the request — most likely the deployment isn’t set to “Anyone”.')); };
     document.head.appendChild(s);
   });
 }
-function setDot(k){ var d=document.getElementById('dot'); d.className='dot'+(k?' '+k:''); }
+function setDot(k){ document.getElementById('dot').className = 'dot' + (k?' '+k:''); }
 
 function pull(quiet){
   return call({action:'state'}).then(function(r){
     if(!r || !r.ok) throw new Error((r&&r.error)||'Bad response');
-    setDot('ok');
+    setDot('ok'); lastErr='';
     var raw = JSON.stringify(r.state);
     if(raw !== lastRaw){ lastRaw = raw; S = r.state; render(); }
     return r.state;
   }).catch(function(e){
-    setDot('err');
+    setDot('err'); lastErr = e.message;
     if(!quiet) toast(e.message);
     if(!S) render();
     throw e;
   });
 }
-
 function push(params){
   if(!PIN){ askPin(function(){ push(params); }); return Promise.reject(new Error('pin')); }
   params.pin = PIN;
@@ -226,30 +236,33 @@ function push(params){
     lastRaw = JSON.stringify(r.state); S = r.state; setDot('ok'); render();
     return r.state;
   }).catch(function(e){
-    busy = false; setDot('err'); render();
+    busy=false; setDot('err'); render();
     if(e.message!=='pin') toast('Not saved: '+e.message);
     throw e;
   });
 }
 
-/* ---------- helpers ---------- */
+/* ---------------- small helpers ---------------- */
 function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('on');
-  clearTimeout(toast._t); toast._t=setTimeout(function(){t.classList.remove('on');},2200); }
+  clearTimeout(toast._t); toast._t=setTimeout(function(){t.classList.remove('on');},2600); }
 function pairs(n){ var o=[]; for(var d=1;d<n;d++) for(var i=0;i+d<n;i++) o.push([i,i+d]); return o; }
-function key(g,i,j){ return g+'-'+i+'-'+j; }
-function games(g,i,j){ var r = S && S.results ? S.results[key(g,i,j)] : null; return Array.isArray(r)?r:[]; }
-function tally(gs){ var a=0,b=0; gs.forEach(function(x){ if(!x) return; if(x.w===0)a++; else b++; }); return [a,b]; }
-function settled(gs){ var t=tally(gs); return t[0]===2||t[1]===2; }
+function gkey(g,i,j){ return g+'-'+i+'-'+j; }
 function unlocked(){ return !!PIN; }
+function need(bo){ return Math.ceil(bo/2); }                    // bo3 -> 2, bo5 -> 3
+function tally(gs){ var a=0,b=0; (gs||[]).forEach(function(x){ if(!x) return; if(x.w===0)a++; else b++; }); return [a,b]; }
+function decided(gs,bo){ var t=tally(gs); return t[0]>=need(bo)||t[1]>=need(bo); }
+function decidedBefore(gs,k,bo){
+  var a=0,b=0;
+  for(var i=0;i<k;i++){ var x=gs[i]; if(!x) continue; if(x.w===0)a++; else b++; }
+  return a>=need(bo)||b>=need(bo);
+}
 
-/* ---------- standings ----------
-   Order: Points -> game diff -> head-to-head -> ball diff -> fewest balls left -> name
-   Head-to-head is only used to separate a straight TWO-way tie. With three or
-   more level, results can loop (A beat B, B beat C, C beat A), so ball
-   difference decides instead — standard practice in group competitions.
------------------------------------------------------------------- */
+/* ---------------- group data ---------------- */
+function ggames(g,i,j){ var r = S&&S.results ? S.results[gkey(g,i,j)] : null; return Array.isArray(r)?r:[]; }
+function gsettled(g,i,j){ return decided(ggames(g,i,j), GBO); }
+
 var RKEYS = [
   function(r){ return -r.pts; },
   function(r){ return -(r.gw - r.gl); },
@@ -260,20 +273,15 @@ function rankRows(rows, h2h){
   return split(rows, 0);
   function split(arr, k){
     if(arr.length <= 1) return arr;
-    if(arr.length === 2 && k >= 2){            // tied on points + game diff
+    if(arr.length === 2 && k >= 2){                 // level on points AND game difference
       var h = h2h[arr[0].n+'|'+arr[1].n];
       if(h === 1)  return [arr[0], arr[1]];
       if(h === -1) return [arr[1], arr[0]];
     }
-    if(k >= RKEYS.length){
+    if(k >= RKEYS.length)
       return arr.slice().sort(function(a,b){ return a.n.localeCompare(b.n); });
-    }
     var f = RKEYS[k], bk = {}, ord = [];
-    arr.forEach(function(r){
-      var v = f(r);
-      if(!(v in bk)){ bk[v] = []; ord.push(v); }
-      bk[v].push(r);
-    });
+    arr.forEach(function(r){ var v=f(r); if(!(v in bk)){ bk[v]=[]; ord.push(v); } bk[v].push(r); });
     ord.sort(function(a,b){ return a-b; });
     var out = [];
     ord.forEach(function(v){ out = out.concat(split(bk[v], k+1)); });
@@ -282,16 +290,16 @@ function rankRows(rows, h2h){
 }
 function standings(gi){
   var names = S.groups[gi];
-  var st = names.map(function(n,i){ return {n:n,i:i,p:0,w:0,l:0,gw:0,gl:0,bf:0,ba:0,pts:0}; });
+  var st = names.map(function(n){ return {n:n,p:0,w:0,l:0,gw:0,gl:0,bf:0,ba:0,pts:0}; });
   var h2h = {};
   pairs(names.length).forEach(function(pr){
-    var gs = games(gi,pr[0],pr[1]);
-    if(!settled(gs)) return;
-    var A = st[pr[0]], B = st[pr[1]];
+    var gs = ggames(gi,pr[0],pr[1]);
+    if(!decided(gs,GBO)) return;
+    var A=st[pr[0]], B=st[pr[1]];
     A.p++; B.p++;
     gs.forEach(function(x){
       if(!x) return;
-      var bl = (typeof x.b === 'number') ? x.b : 0;
+      var bl = (typeof x.b==='number') ? x.b : 0;
       if(x.w===0){ A.gw++; B.gl++; A.bf+=bl; B.ba+=bl; }
       else       { B.gw++; A.gl++; B.bf+=bl; A.ba+=bl; }
     });
@@ -302,19 +310,71 @@ function standings(gi){
   return rankRows(st, h2h);
 }
 function prog(gi){
-  var ps=pairs(S.groups[gi].length), d=0;
-  ps.forEach(function(pr){ if(settled(games(gi,pr[0],pr[1]))) d++; });
+  var ps = pairs(S.groups[gi].length), d = 0;
+  ps.forEach(function(pr){ if(gsettled(gi,pr[0],pr[1])) d++; });
   return [d, ps.length];
 }
 function progAll(){ var d=0,t=0; for(var g=0;g<4;g++){ var c=prog(g); d+=c[0]; t+=c[1]; } return [d,t]; }
+function groupsDone(){ var p=progAll(); return p[1]>0 && p[0]===p[1]; }
 
-/* ---------- render ---------- */
+/* ---------------- knockout ----------------
+   Quarters:  QF1 A1 v C2   QF2 C1 v A2      (Set 1 — the A/C half)
+              QF3 B1 v D2   QF4 D1 v B2      (Set 2 — the B/D half)
+   Semis (best of 5), Set 1 against Set 2, group winners kept apart:
+              SF1 = QF1 winner v QF4 winner
+              SF2 = QF2 winner v QF3 winner
+   Final (best of 5)      = SF1 winner v SF2 winner
+   3rd place (best of 5)  = SF1 loser  v SF2 loser
+-------------------------------------------- */
+var KO_ORDER = ['qf1','qf2','qf3','qf4','sf1','sf2','f','tp'];
+
+function korec(key){ return (S && S.ko) ? S.ko[key] : null; }
+function kgames(tree, key){
+  var rec = korec(key), m = tree && tree[key];
+  if(!rec || !m || !rec.p) return [];
+  // a stored result belongs to the players it was recorded for; if the bracket
+  // has moved on, ignore it rather than showing a stale score
+  if(rec.p[0] !== m.p[0] || rec.p[1] !== m.p[1]) return [];
+  return Array.isArray(rec.gs) ? rec.gs : [];
+}
+function kdone(tree,key){ var m=tree[key]; return !!(m.p[0]&&m.p[1]) && decided(kgames(tree,key), m.bo); }
+function kwin(tree,key){
+  if(!kdone(tree,key)) return null;
+  var t=tally(kgames(tree,key)); return t[0]>t[1] ? tree[key].p[0] : tree[key].p[1];
+}
+function klose(tree,key){
+  if(!kdone(tree,key)) return null;
+  var t=tally(kgames(tree,key)); return t[0]>t[1] ? tree[key].p[1] : tree[key].p[0];
+}
+function koTree(){
+  if(!groupsDone()) return null;
+  var q = [standings(0), standings(1), standings(2), standings(3)];
+  function nm(gi,ix){ return (q[gi][ix]||{}).n || null; }
+  var t = {};
+  t.qf1 = { p:[nm(0,0), nm(2,1)], bo:GBO, lab:'Quarter-final 1', note:'A1 v C2',    set:1 };
+  t.qf2 = { p:[nm(2,0), nm(0,1)], bo:GBO, lab:'Quarter-final 2', note:'C1 v A2',    set:1 };
+  t.qf3 = { p:[nm(1,0), nm(3,1)], bo:GBO, lab:'Quarter-final 3', note:'B1 v D2',    set:2 };
+  t.qf4 = { p:[nm(3,0), nm(1,1)], bo:GBO, lab:'Quarter-final 4', note:'D1 v B2',    set:2 };
+  t.sf1 = { p:[kwin(t,'qf1'), kwin(t,'qf4')], bo:KBO, lab:'Semi-final 1', note:'QF1 winner v QF4 winner' };
+  t.sf2 = { p:[kwin(t,'qf2'), kwin(t,'qf3')], bo:KBO, lab:'Semi-final 2', note:'QF2 winner v QF3 winner' };
+  t.f   = { p:[kwin(t,'sf1'), kwin(t,'sf2')], bo:KBO, lab:'Final',            note:'SF winners' };
+  t.tp  = { p:[klose(t,'sf1'), klose(t,'sf2')], bo:KBO, lab:'3rd place playoff', note:'SF losers' };
+  return t;
+}
+function koProg(t){
+  var d=0, tot=0;
+  KO_ORDER.forEach(function(k){ tot++; if(kdone(t,k)) d++; });
+  return [d,tot];
+}
+
+/* ---------------- render ---------------- */
 function render(){
   document.getElementById('title').textContent = (S && S.title) || APP_CONFIG.TITLE;
   document.getElementById('lockBtn').textContent = unlocked() ? '🔓' : '🔒';
   var v = document.getElementById('view'), tb = document.getElementById('tabs');
 
   if(!API){ tb.innerHTML=''; v.innerHTML = noApi(); return; }
+  if(!S && lastErr){ tb.innerHTML=''; v.innerHTML = errCard(); return; }
   if(!S){ tb.innerHTML=''; v.innerHTML =
     '<div class="card center"><span class="spin"></span><div class="muted" style="margin-top:8px">Loading…</div></div>'; return; }
 
@@ -322,28 +382,33 @@ function render(){
     tb.innerHTML='';
     v.innerHTML = unlocked() ? setupHtml() :
       '<div class="card center"><div style="font-size:30px">🎱</div><strong>Not started yet</strong>'+
-      '<div class="muted" style="margin-top:6px">The organiser hasn\'t drawn the groups. Check back shortly.</div></div>';
+      '<div class="muted" style="margin-top:6px">The organiser hasn’t drawn the groups. Check back shortly.</div></div>';
     return;
   }
 
-  tb.innerHTML = ['A','B','C','D','All'].map(function(t){
-    var lab = t==='All' ? 'All' : ('Group '+t);
-    if(t!=='All'){ var c=prog(L.indexOf(t)); lab = t+' <span style="font-weight:500;opacity:.65">'+c[0]+'/'+c[1]+'</span>'; }
+  var done = groupsDone();
+  tb.innerHTML = ['A','B','C','D','All','KO'].map(function(t){
+    var lab;
+    if(t==='All') lab='All';
+    else if(t==='KO') lab = 'Knockout' + (done?'':' <span class="lk">🔒</span>');
+    else { var c=prog(L.indexOf(t)); lab = t+' <span style="font-weight:500;opacity:.6">'+c[0]+'/'+c[1]+'</span>'; }
     return '<button class="tab'+(tab===t?' on':'')+'" onclick="setTab(\''+t+'\')">'+lab+'</button>';
   }).join('');
 
   var p = progAll();
   var head = '<div class="card" style="padding:12px 14px">'+
     '<div style="display:flex;justify-content:space-between;align-items:baseline">'+
-      '<strong style="font-size:14px">'+p[0]+' of '+p[1]+' matches played</strong>'+
+      '<strong style="font-size:14px">'+
+        (done ? 'Group stage complete' : p[0]+' of '+p[1]+' group matches played')+'</strong>'+
       (busy?'<span class="spin"></span>':'<span class="muted">'+(p[1]?Math.round(p[0]/p[1]*100):0)+'%</span>')+
     '</div><div class="bar"><div style="width:'+(p[1]?p[0]/p[1]*100:0)+'%"></div></div>'+
     (unlocked()?'':'<div class="muted" style="margin-top:9px">Read-only view. Tap 🔒 to enter the scorer PIN.</div>')+
     '</div>';
 
-  var body = '';
-  if(tab==='All'){ for(var g=0;g<4;g++) body += groupBlock(g,true); }
-  else body += groupBlock(L.indexOf(tab), false);
+  var body='';
+  if(tab==='KO')      body = koHtml();
+  else if(tab==='All'){ for(var g=0;g<4;g++) body += groupBlock(g,true); }
+  else                body = groupBlock(L.indexOf(tab), false);
 
   v.innerHTML = head + body;
 }
@@ -355,9 +420,11 @@ function groupBlock(gi, compact){
   h += '<table><tr><th class="l" colspan="2">Player</th><th>P</th><th>W</th><th>L</th><th>Gms</th><th>G±</th><th>B±</th><th>Pts</th></tr>';
   st.forEach(function(r,ix){
     var gd=r.gw-r.gl, bd=r.bf-r.ba;
-    h += '<tr'+(full&&ix===0?' class="top"':'')+'>'+
-      '<td class="pos">'+(ix+1)+'</td>'+
-      '<td class="l nm">'+esc(r.n)+(full&&ix===0?' <span class="pill">WINNER</span>':'')+'</td>'+
+    var cls = full && ix===0 ? ' class="top"' : (full && ix===1 ? ' class="qual"' : '');
+    var tagged = full && ix<2
+      ? ' <span class="pill'+(ix===1?' q':'')+'">'+(ix===0?'WINNER':'2ND')+'</span>' : '';
+    h += '<tr'+cls+'><td class="pos">'+(ix+1)+'</td>'+
+      '<td class="l nm">'+esc(r.n)+tagged+'</td>'+
       '<td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.l+'</td>'+
       '<td>'+r.gw+'–'+r.gl+'</td>'+
       '<td>'+(gd>0?'+':'')+gd+'</td>'+
@@ -366,71 +433,150 @@ function groupBlock(gi, compact){
   });
   h += '</table>';
   h += '<div class="legend"><b>Gms</b> games won–lost · <b>G±</b> game difference · '+
-       '<b>B±</b> ball difference (balls your opponents left on the table when you beat them, '+
-       'minus the balls you left when you lost).<br>'+
-       'Ties break on: points → game difference → head-to-head → ball difference → fewest balls left.</div>';
+       '<b>B±</b> ball difference (balls your opponents left when you beat them, minus the balls you left when you lost). '+
+       'Top two qualify.<br>Ties break on: points → game difference → head-to-head → ball difference → fewest balls left.</div>';
   h += '</div>';
 
   if(!compact){
-    h += '<div class="gtitle"><h2>Matches</h2></div>';
+    h += '<div class="gtitle"><h2>Matches</h2><span class="muted">best of 3</span></div>';
     pairs(S.groups[gi].length).forEach(function(pr){
-      h += matchCard(gi, pr[0], pr[1]);
+      var A=S.groups[gi][pr[0]], B=S.groups[gi][pr[1]];
+      h += matchCard({ a:A, b:B, bo:GBO, gs:ggames(gi,pr[0],pr[1]),
+                       open:'openG('+gi+','+pr[0]+','+pr[1]+')' });
     });
   }
   return h;
 }
 
-function matchCard(gi,i,j){
-  var A = S.groups[gi][i], B = S.groups[gi][j];
-  var gs = games(gi,i,j), t = tally(gs), fin = settled(gs);
-  var cls = 'm' + (fin?' done':'') + (unlocked()?' play':' locked');
-  var h = '<button class="'+cls+'" '+(unlocked()?'onclick="openMatch('+gi+','+i+','+j+')"':'disabled style="opacity:1"')+'>';
+function matchCard(o){
+  var gs = o.gs || [], t = tally(gs), fin = !!(o.a&&o.b) && decided(gs,o.bo);
+  var tbd = !(o.a && o.b);
+  var can = unlocked() && !tbd;
+  var cls = 'm' + (fin?' done':'') + (tbd?' tbd':'') + (can?'':' locked') + (o.champ?' champ':'');
+  var h = '<button class="'+cls+'" '+(can?'onclick="'+o.open+'"':'disabled style="opacity:'+(tbd?'.6':'1')+'"')+'>';
+  if(o.lab)
+    h += '<div class="mlab"><span>'+esc(o.lab)+'</span><span>'+
+         (o.note?esc(o.note)+' · ':'')+'best of '+o.bo+'</span></div>';
   h += '<div class="mtop">'+
-    '<span class="a'+(fin&&t[0]>t[1]?' win':'')+'">'+esc(A)+'</span>'+
-    '<span class="s">'+(gs.length? t[0]+'–'+t[1] : 'vs')+'</span>'+
-    '<span class="b'+(fin&&t[1]>t[0]?' win':'')+'">'+esc(B)+'</span></div>';
+    '<span class="a'+(fin&&t[0]>t[1]?' win':'')+(o.a?'':' tbdn')+'">'+esc(o.a||'TBD')+'</span>'+
+    '<span class="s">'+(gs.length? t[0]+'–'+t[1] : (tbd?'·':'vs'))+'</span>'+
+    '<span class="b'+(fin&&t[1]>t[0]?' win':'')+(o.b?'':' tbdn')+'">'+esc(o.b||'TBD')+'</span></div>';
   if(gs.length){
     h += '<div class="games">';
     gs.forEach(function(x,k){
       if(!x) return;
-      var wn = x.w===0?A:B, bl = (typeof x.b==='number')?x.b:null;
+      var wn = x.w===0?o.a:o.b, bl = (typeof x.b==='number')?x.b:null;
       h += '<span class="g">G'+(k+1)+' <b>'+esc(wn)+'</b>'+(bl===null?'':' · '+bl+' left')+'</span>';
     });
     h += '</div>';
-  } else if(unlocked()){
+  } else if(can){
     h += '<div class="empty">Tap to record the result</div>';
+  } else if(tbd){
+    h += '<div class="empty">Waiting on an earlier round</div>';
   }
   return h + '</button>';
 }
 
+function koHtml(){
+  if(!groupsDone()){
+    var p = progAll(), left = p[1]-p[0];
+    return '<div class="card center"><div style="font-size:28px">🔒</div>'+
+      '<strong>Knockout not set yet</strong>'+
+      '<div class="muted" style="margin-top:6px">'+left+' group match'+(left===1?'':'es')+
+      ' still to play. The bracket fills in automatically the moment the last one is saved.</div>'+
+      '<div class="legend" style="margin-top:14px;text-align:left">'+
+      'Top two from every group qualify. Quarter-finals cross Group A with Group C, and Group B with Group D '+
+      '(best of 3). Semi-finals, final and the 3rd place playoff are best of 5.</div></div>';
+  }
+  var t = koTree(), kp = koProg(t);
+  var champ = kwin(t,'f'), runner = klose(t,'f'), third = kwin(t,'tp');
+
+  var h = '';
+  if(champ){
+    h += '<div class="card champ center" style="padding:18px">'+
+      '<div style="font-size:30px">🏆</div>'+
+      '<div style="font-size:20px;font-weight:800;margin-top:4px">'+esc(champ)+'</div>'+
+      '<div class="muted" style="margin-top:2px">Champion</div>'+
+      '<div style="margin-top:12px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap">'+
+        '<span class="pill">2nd · '+esc(runner)+'</span>'+
+        (third?'<span class="pill g">3rd · '+esc(third)+'</span>':'')+
+      '</div></div>';
+  }
+
+  h += '<div class="card" style="padding:12px 14px">'+
+       '<div style="display:flex;justify-content:space-between;align-items:baseline">'+
+       '<strong style="font-size:14px">'+kp[0]+' of '+kp[1]+' knockout matches played</strong></div>'+
+       '<div class="bar"><div style="width:'+(kp[0]/kp[1]*100)+'%"></div></div></div>';
+
+  h += '<div class="rnd">Qualifiers</div><div class="card"><div class="seedgrid">';
+  for(var g=0; g<4; g++){
+    var st = standings(g);
+    for(var ix=0; ix<2; ix++)
+      h += '<div class="seed"><b>'+L[g]+(ix+1)+'</b><span>'+esc((st[ix]||{}).n||'—')+'</span></div>';
+  }
+  h += '</div><div class="legend">Quarter-finals cross A with C and B with D, so the two halves of the draw '+
+       'stay separate until the semi-finals.</div></div>';
+
+  h += '<div class="rnd">Quarter-finals · best of 3</div>';
+  ['qf1','qf2','qf3','qf4'].forEach(function(k){ h += koCard(t,k); });
+  h += '<div class="rnd">Semi-finals · best of 5</div>';
+  ['sf1','sf2'].forEach(function(k){ h += koCard(t,k); });
+  h += '<div class="rnd">Final · best of 5</div>' + koCard(t,'f');
+  h += '<div class="rnd">3rd place playoff · best of 5</div>' + koCard(t,'tp');
+  return h;
+}
+function koCard(t,k){
+  var m = t[k];
+  return matchCard({ a:m.p[0], b:m.p[1], bo:m.bo, gs:kgames(t,k),
+                     lab:m.lab, note:m.note, open:'openK(\''+k+'\')',
+                     champ:(k==='f' && kdone(t,'f')) });
+}
+
 function setTab(t){ tab=t; localStorage.setItem(LS.tab,t); render(); window.scrollTo(0,0); }
 
-/* ---------- setup (organiser) ---------- */
+/* ---------------- setup ---------------- */
 function setupHtml(){
   return '<div class="card"><strong>Set up the tournament</strong>'+
     '<div class="muted" style="margin:6px 0 10px">Enter player names, one per line (16–20 works best). '+
-    'They\'ll be shuffled and dealt into Groups A–D.</div>'+
+    'They’ll be shuffled and dealt into Groups A–D.</div>'+
     '<textarea id="names" placeholder="Suresh&#10;Player 2&#10;Player 3&#10;…"></textarea>'+
     '<div class="rowb" style="margin-top:10px">'+
     '<button class="b pri" style="flex:1" onclick="doDraw()">Draw groups</button></div></div>';
 }
 function doDraw(){
-  var raw = document.getElementById('names').value;
-  var p = raw.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  var p = document.getElementById('names').value.split('\n')
+    .map(function(s){return s.trim();}).filter(Boolean);
   var seen={}, dup=null;
   p.forEach(function(n){ var k=n.toLowerCase(); if(seen[k]) dup=n; seen[k]=1; });
   if(dup){ toast('Duplicate name: '+dup); return; }
   if(p.length<8){ toast('Enter at least 8 players'); return; }
   if(p.length>24){ toast('Maximum 24 players'); return; }
-  for(var k=p.length-1;k>0;k--){ var r=Math.floor(Math.random()*(k+1)); var t=p[k];p[k]=p[r];p[r]=t; }
-  var g=[[],[],[],[]]; p.forEach(function(n,ix){ g[ix%4].push(n); });
-  push({action:'setup', groups:JSON.stringify(g), title:APP_CONFIG.TITLE}).then(function(){ toast('Groups drawn'); });
+  push({action:'setup', groups:JSON.stringify(shuffleInto4(p)), title:APP_CONFIG.TITLE})
+    .then(function(){ toast('Groups drawn'); });
+}
+function shuffleInto4(list){
+  var a = list.slice();
+  for(var k=a.length-1;k>0;k--){ var r=Math.floor(Math.random()*(k+1)); var t=a[k]; a[k]=a[r]; a[r]=t; }
+  var g=[[],[],[],[]]; a.forEach(function(n,ix){ g[ix%4].push(n); });
+  return g;
 }
 
-/* ---------- score entry ---------- */
-function openMatch(gi,i,j){
-  draft = { gi:gi, i:i, j:j, gs: JSON.parse(JSON.stringify(games(gi,i,j))) };
-  while(draft.gs.length<3) draft.gs.push(null);
+/* ---------------- score entry ---------------- */
+function openG(gi,i,j){
+  openMatch({ type:'g', key:gkey(gi,i,j), a:S.groups[gi][i], b:S.groups[gi][j],
+              bo:GBO, lab:'Group '+L[gi], gs:ggames(gi,i,j) });
+}
+function openK(k){
+  var t = koTree(); if(!t) return;
+  var m = t[k];
+  if(!m.p[0] || !m.p[1]){ toast('Waiting on an earlier round'); return; }
+  openMatch({ type:'k', key:k, a:m.p[0], b:m.p[1], bo:m.bo, lab:m.lab, gs:kgames(t,k) });
+}
+function openMatch(m){
+  draft = { type:m.type, key:m.key, a:m.a, b:m.b, bo:m.bo, lab:m.lab,
+            gs: JSON.parse(JSON.stringify(m.gs||[])) };
+  while(draft.gs.length < draft.bo) draft.gs.push(null);
+  draft.gs.length = draft.bo;
   sheetOpen = true;
   document.getElementById('sheet').classList.add('on');
   document.body.style.overflow='hidden';
@@ -441,33 +587,30 @@ function closeSheet(){
   document.getElementById('sheet').classList.remove('on');
   document.body.style.overflow='';
 }
-function decidedBy(gs,upto){
-  var a=0,b=0;
-  for(var k=0;k<upto;k++){ var x=gs[k]; if(!x) continue; if(x.w===0)a++; else b++; }
-  return a===2||b===2;
-}
 function drawSheet(){
-  var d=draft, A=S.groups[d.gi][d.i], B=S.groups[d.gi][d.j];
-  var t=tally(d.gs);
+  var d=draft, t=tally(d.gs);
   var h='<div class="grab"></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">'+
-     '<strong style="font-size:16px">Group '+L[d.gi]+'</strong>'+
-     '<span class="muted">best of 3</span></div>';
+     '<strong style="font-size:16px">'+esc(d.lab)+'</strong>'+
+     '<span class="muted">best of '+d.bo+' · first to '+need(d.bo)+'</span></div>';
   h+='<div class="mtop" style="margin:8px 0 14px;font-size:16px">'+
-     '<span class="a">'+esc(A)+'</span><span class="s" style="color:var(--ink)">'+t[0]+'–'+t[1]+'</span>'+
-     '<span class="b">'+esc(B)+'</span></div>';
+     '<span class="a">'+esc(d.a)+'</span>'+
+     '<span class="s" style="color:var(--ink)">'+t[0]+'–'+t[1]+'</span>'+
+     '<span class="b">'+esc(d.b)+'</span></div>';
 
-  for(var k=0;k<3;k++){
-    var off = (k===2 && decidedBy(d.gs,2));
+  for(var k=0;k<d.bo;k++){
+    var off = decidedBefore(d.gs,k,d.bo);
     var x = d.gs[k];
-    h+='<div class="gblock'+(off?' off':'')+'">';
-    h+='<div class="glab">Game '+(k+1)+(off?' — not needed':'')+'</div>';
+    var missing = !!x && typeof x.b !== 'number';
+    h+='<div class="gblock'+(off?' off':'')+(missing?' warn':'')+'">';
+    h+='<div class="glab"><span>Game '+(k+1)+(off?' — not needed':'')+'</span>'+
+       (missing?'<span class="w">balls not set · counts as 0</span>':'')+'</div>';
     h+='<div class="two">'+
-       '<button class="pbtn'+(x&&x.w===0?' on':'')+'" '+(off?'disabled':'')+' onclick="pickW('+k+',0)">'+esc(A)+'</button>'+
-       '<button class="pbtn'+(x&&x.w===1?' on':'')+'" '+(off?'disabled':'')+' onclick="pickW('+k+',1)">'+esc(B)+'</button>'+
+       '<button class="pbtn'+(x&&x.w===0?' on':'')+'" '+(off?'disabled':'')+' onclick="pickW('+k+',0)">'+esc(d.a)+'</button>'+
+       '<button class="pbtn'+(x&&x.w===1?' on':'')+'" '+(off?'disabled':'')+' onclick="pickW('+k+',1)">'+esc(d.b)+'</button>'+
        '</div>';
     if(x && !off){
-      var loser = x.w===0?B:A;
+      var loser = x.w===0?d.b:d.a;
       h+='<div class="balls"><div class="lab">Balls '+esc(loser)+' had left on the table</div><div class="nums">';
       for(var n=0;n<8;n++)
         h+='<button class="nb'+(x.b===n?' on':'')+'" onclick="pickB('+k+','+n+')">'+n+'</button>';
@@ -483,9 +626,9 @@ function drawSheet(){
 }
 function pickW(k,w){
   var x = draft.gs[k];
-  if(x && x.w===w){ draft.gs[k]=null; }
-  else { draft.gs[k] = { w:w, b: (x && typeof x.b==='number') ? x.b : null }; }
-  if(decidedBy(draft.gs,2)) draft.gs[2]=null;
+  if(x && x.w===w) draft.gs[k]=null;
+  else draft.gs[k] = { w:w, b:(x && typeof x.b==='number') ? x.b : null };
+  for(var i=0;i<draft.bo;i++) if(decidedBefore(draft.gs,i,draft.bo)) draft.gs[i]=null;
   drawSheet();
 }
 function pickB(k,n){
@@ -494,25 +637,36 @@ function pickB(k,n){
   drawSheet();
 }
 function saveMatch(){
-  var gs = draft.gs.filter(Boolean).map(function(x){ return {w:x.w, b: (typeof x.b==='number')?x.b:0}; });
-  var miss = draft.gs.filter(Boolean).some(function(x){ return typeof x.b!=='number'; });
+  var d = draft;
+  var missing = [];
+  d.gs.forEach(function(x,k){ if(x && typeof x.b !== 'number') missing.push(k+1); });
+  var gs = d.gs.filter(Boolean).map(function(x){ return { w:x.w, b:(typeof x.b==='number')?x.b:0 }; });
   var t = tally(gs);
-  if(gs.length && !(t[0]===2||t[1]===2)){
-    if(!confirm('Match not finished (needs 2 game wins). Save progress anyway?')) return;
+
+  if(missing.length){
+    var lab = missing.length===1 ? 'Game '+missing[0]+' has'
+            : 'Games '+missing.slice(0,-1).join(', ')+' and '+missing[missing.length-1]+' have';
+    if(!confirm(lab+' no "balls left" recorded.\n\nThey will be saved as 0, which counts as a clean sweep '+
+                'and affects ball difference in the tie-breaks.\n\nSave anyway?')) return;
   }
-  if(miss && !confirm('Some games have no "balls left" recorded — they\'ll count as 0. Save anyway?')) return;
-  var d=draft;
-  push({action:'match', key:key(d.gi,d.i,d.j), games:JSON.stringify(gs)})
-    .then(function(){ closeSheet(); toast('Saved'); });
+  if(gs.length && !(t[0]>=need(d.bo) || t[1]>=need(d.bo))){
+    if(!confirm('This match isn’t finished — it needs '+need(d.bo)+' game wins.\n\nSave the progress so far?')) return;
+  }
+  var params = d.type==='g'
+    ? { action:'match', key:d.key, games:JSON.stringify(gs) }
+    : { action:'ko', key:d.key, p:JSON.stringify([d.a,d.b]), games:JSON.stringify(gs) };
+  push(params).then(function(){ closeSheet(); toast(missing.length?'Saved (missing balls counted as 0)':'Saved'); });
 }
 function clearMatch(){
   if(!confirm('Clear this match result?')) return;
-  var d=draft;
-  push({action:'match', key:key(d.gi,d.i,d.j), games:'[]'})
-    .then(function(){ closeSheet(); toast('Cleared'); });
+  var d = draft;
+  var params = d.type==='g'
+    ? { action:'match', key:d.key, games:'[]' }
+    : { action:'ko', key:d.key, p:JSON.stringify([d.a,d.b]), games:'[]' };
+  push(params).then(function(){ closeSheet(); toast('Cleared'); });
 }
 
-/* ---------- pin / menu ---------- */
+/* ---------------- pin / menu ---------------- */
 function lockTap(){
   if(unlocked()){
     if(confirm('Lock scoring on this device?')){ PIN=''; localStorage.removeItem(LS.pin); render(); toast('Locked'); }
@@ -521,8 +675,7 @@ function lockTap(){
 function askPin(then){
   var p = prompt('Scorer PIN');
   if(p===null) return;
-  p = String(p).trim();
-  if(!p) return;
+  p = String(p).trim(); if(!p) return;
   call({action:'checkpin', pin:p}).then(function(r){
     if(r && r.ok){ PIN=p; localStorage.setItem(LS.pin,p); render(); toast('Scoring unlocked'); if(then) then(); }
     else toast('Wrong PIN');
@@ -532,18 +685,19 @@ function openMenu(){
   sheetOpen=true;
   document.getElementById('sheet').classList.add('on');
   document.body.style.overflow='hidden';
-  var h='<div class="grab"></div><strong style="font-size:16px">Menu</strong>';
-  h+='<div class="stack" style="margin-top:12px">';
-  h+='<button class="b" onclick="closeSheet();pull().then(function(){toast(\'Up to date\')})">Refresh now</button>';
+  var h='<div class="grab"></div><strong style="font-size:16px">Menu</strong><div class="stack" style="margin-top:12px">';
+  h+='<button class="b" onclick="closeSheet();pull().then(function(){toast(\'Up to date\')}).catch(function(){})">Refresh now</button>';
   h+='<button class="b" onclick="shareLink()">Share this page</button>';
-  if(unlocked()){
+  if(S && S.groups && S.groups.length)
     h+='<button class="b" onclick="copyWA()">Copy WhatsApp update</button>';
+  if(unlocked()){
     h+='<button class="b" onclick="redraw()">Re-draw groups</button>';
     h+='<button class="b dng" onclick="wipe()">Delete tournament</button>';
   }
+  h+='<button class="b" onclick="testConn()">Test connection</button>';
   h+='<button class="b" onclick="setApi()">Set server URL</button>';
-  h+='<button class="b" onclick="closeSheet()">Close</button>';
-  h+='</div><div class="muted" style="margin-top:12px;font-size:12px;word-break:break-all">'+
+  h+='<button class="b" onclick="closeSheet()">Close</button></div>';
+  h+='<div class="muted" style="margin-top:12px;font-size:12px;word-break:break-all">'+
      (API? 'Connected to: '+esc(API.slice(0,58))+'…' : 'No server URL set')+'</div>';
   document.getElementById('panel').innerHTML=h;
 }
@@ -551,19 +705,18 @@ function setApi(){
   var u = prompt('Apps Script /exec URL', API||'');
   if(u===null) return;
   API = u.trim(); localStorage.setItem(LS.url, API);
-  closeSheet(); S=null; lastRaw=''; render(); pull().catch(function(){});
+  closeSheet(); S=null; lastRaw=''; lastErr=''; render(); pull().catch(function(){});
 }
+function testConn(){ if(!API){ toast('No URL set'); return; } window.open(API,'_blank'); }
 function shareLink(){
   var u = location.href.split('#')[0];
   if(navigator.share){ navigator.share({title:(S&&S.title)||APP_CONFIG.TITLE, url:u}).catch(function(){}); closeSheet(); return; }
-  copyText(u, 'Link copied'); closeSheet();
+  copyText(u,'Link copied'); closeSheet();
 }
 function redraw(){
-  if(!confirm('Re-draw all four groups? Every recorded result will be deleted.')) return;
+  if(!confirm('Re-draw all four groups?\n\nEvery group result AND the whole knockout bracket will be deleted.')) return;
   var all=[]; S.groups.forEach(function(g){ all=all.concat(g); });
-  for(var k=all.length-1;k>0;k--){ var r=Math.floor(Math.random()*(k+1)); var t=all[k];all[k]=all[r];all[r]=t; }
-  var g=[[],[],[],[]]; all.forEach(function(n,ix){ g[ix%4].push(n); });
-  push({action:'setup', groups:JSON.stringify(g), title:(S&&S.title)||APP_CONFIG.TITLE})
+  push({action:'setup', groups:JSON.stringify(shuffleInto4(all)), title:(S&&S.title)||APP_CONFIG.TITLE})
     .then(function(){ closeSheet(); toast('Groups re-drawn'); });
 }
 function wipe(){
@@ -571,38 +724,66 @@ function wipe(){
   push({action:'reset'}).then(function(){ closeSheet(); toast('Deleted'); });
 }
 
-/* ---------- whatsapp text ---------- */
+/* ---------------- WhatsApp text ---------------- */
 function pad(s,n){ s=String(s); while(s.length<n) s+=' '; return s; }
 function padl(s,n){ s=String(s); while(s.length<n) s=' '+s; return s; }
 function waText(){
   var p=progAll(), now=new Date();
-  var o='🎱 *'+((S&&S.title)||APP_CONFIG.TITLE).toUpperCase()+' — STANDINGS*\n';
-  o+=p[0]+'/'+p[1]+' matches · '+now.toLocaleDateString(undefined,{day:'numeric',month:'short'})+' '+
+  var o='🎱 *'+((S&&S.title)||APP_CONFIG.TITLE).toUpperCase()+'*\n';
+  o+=now.toLocaleDateString(undefined,{day:'numeric',month:'short'})+' '+
      now.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})+'\n';
-  for(var gi=0;gi<4;gi++){
-    var st=standings(gi), c=prog(gi), w=4;
-    st.forEach(function(r){ if(r.n.length>w) w=r.n.length; });
-    if(w>12) w=12;
-    o+='\n*Group '+L[gi]+'* ('+c[0]+'/'+c[1]+')\n```\n';
-    o+=pad('#',2)+pad('Player',w+1)+padl('W',2)+padl('L',2)+padl('G±',4)+padl('B±',4)+padl('Pts',4)+'\n';
-    st.forEach(function(r,ix){
-      var gd=r.gw-r.gl, bd=r.bf-r.ba;
-      o+=pad(ix+1,2)+pad(r.n.slice(0,w),w+1)+padl(r.w,2)+padl(r.l,2)+
-         padl((gd>0?'+':'')+gd,4)+padl((bd>0?'+':'')+bd,4)+padl(r.pts,4)+'\n';
-    });
-    o+='```\n';
+
+  var t = koTree();
+  var champ = t ? kwin(t,'f') : null;
+  if(champ){
+    o+='\n🏆 *CHAMPION — '+champ+'*\n';
+    o+='2nd: '+klose(t,'f')+'\n';
+    var th = kwin(t,'tp'); if(th) o+='3rd: '+th+'\n';
   }
-  var pend=[];
-  for(var g2=0;g2<4;g2++){
-    pairs(S.groups[g2].length).forEach(function(pr){
-      if(!settled(games(g2,pr[0],pr[1])))
-        pend.push(L[g2]+': '+S.groups[g2][pr[0]]+' v '+S.groups[g2][pr[1]]);
-    });
+
+  if(!t || !champ){
+    o+='\n*GROUP STAGE* ('+p[0]+'/'+p[1]+')\n';
+    for(var gi=0;gi<4;gi++){
+      var st=standings(gi), c=prog(gi), w=4;
+      st.forEach(function(r){ if(r.n.length>w) w=r.n.length; });
+      if(w>12) w=12;
+      o+='\n*Group '+L[gi]+'* ('+c[0]+'/'+c[1]+')\n```\n';
+      o+=pad('#',2)+pad('Player',w+1)+padl('W',2)+padl('L',2)+padl('G±',4)+padl('B±',4)+padl('Pts',4)+'\n';
+      st.forEach(function(r,ix){
+        var gd=r.gw-r.gl, bd=r.bf-r.ba;
+        o+=pad(ix+1,2)+pad(r.n.slice(0,w),w+1)+padl(r.w,2)+padl(r.l,2)+
+           padl((gd>0?'+':'')+gd,4)+padl((bd>0?'+':'')+bd,4)+padl(r.pts,4)+'\n';
+      });
+      o+='```\n';
+    }
   }
-  if(pend.length){
-    o+='\n*Still to play ('+pend.length+')*\n'+pend.slice(0,10).map(function(x){return '• '+x;}).join('\n')+'\n';
-    if(pend.length>10) o+='…and '+(pend.length-10)+' more\n';
-  } else o+='\n🏆 *All matches complete!*\n';
+
+  if(t){
+    o+='\n*KNOCKOUT*\n';
+    [['qf1','QF1'],['qf2','QF2'],['qf3','QF3'],['qf4','QF4'],
+     ['sf1','SF1'],['sf2','SF2'],['f','FINAL'],['tp','3rd place']].forEach(function(e){
+      var m=t[e[0]], gs=kgames(t,e[0]), tl=tally(gs);
+      var line = e[1]+': ';
+      if(!m.p[0]||!m.p[1]) line += 'TBD';
+      else if(kdone(t,e[0]))
+        line += (tl[0]>tl[1] ? '*'+m.p[0]+'* '+tl[0]+'–'+tl[1]+' '+m.p[1]
+                             : m.p[0]+' '+tl[0]+'–'+tl[1]+' *'+m.p[1]+'*');
+      else line += m.p[0]+' v '+m.p[1] + (gs.length? ' ('+tl[0]+'–'+tl[1]+')' : '');
+      o += line + '\n';
+    });
+  } else {
+    var pend=[];
+    for(var g2=0;g2<4;g2++){
+      pairs(S.groups[g2].length).forEach(function(pr){
+        if(!gsettled(g2,pr[0],pr[1]))
+          pend.push(L[g2]+': '+S.groups[g2][pr[0]]+' v '+S.groups[g2][pr[1]]);
+      });
+    }
+    if(pend.length){
+      o+='\n*Still to play ('+pend.length+')*\n'+pend.slice(0,10).map(function(x){return '• '+x;}).join('\n')+'\n';
+      if(pend.length>10) o+='…and '+(pend.length-10)+' more\n';
+    }
+  }
   o+='\nLive table: '+location.href.split('#')[0]+'\n';
   return o;
 }
@@ -620,20 +801,34 @@ function copyText(t,msg){
   }
 }
 
-/* ---------- no-config screen ---------- */
+/* ---------------- fallback screens ---------------- */
+function errCard(){
+  return '<div class="card"><strong>Can’t reach the scoreboard</strong>'+
+    '<div class="muted" style="margin:6px 0 12px">'+esc(lastErr)+'</div><div class="stack">'+
+    '<button class="b pri" onclick="lastErr=\'\';render();pull().then(function(){toast(\'Connected\')}).catch(function(){})">Try again</button>'+
+    '<button class="b" onclick="testConn()">Open the server URL directly</button>'+
+    '<button class="b" onclick="setApi()">Change server URL</button></div>'+
+    '<div class="legend" style="margin-top:14px">'+
+    '<b>Shows <code>{"ok":true…}</code></b> — server is fine, the saved URL here is wrong.<br><br>'+
+    '<b>Shows a Google sign-in</b> — the deployment’s “Who has access” is not <b>Anyone</b>.<br><br>'+
+    '<b>Nothing loads</b> — the network may block script.google.com; try mobile data.</div>'+
+    '<div class="muted" style="margin-top:10px;font-size:11px;word-break:break-all">'+esc(API||'(none)')+'</div></div>';
+}
 function noApi(){
   return '<div class="card"><strong>Almost there</strong>'+
-    '<div class="muted" style="margin:6px 0 12px">This page isn\'t connected to your Google Sheet yet. '+
+    '<div class="muted" style="margin:6px 0 12px">This page isn’t connected to your Google Sheet yet. '+
     'Open <code>index.html</code>, paste your Apps Script <code>/exec</code> URL into '+
     '<code>APP_CONFIG.API_URL</code>, and republish — or set it here just for this device.</div>'+
     '<button class="b pri" onclick="setApi()">Set server URL</button></div>';
 }
 
-/* ---------- boot ---------- */
+/* ---------------- boot ---------------- */
 document.getElementById('title').textContent = APP_CONFIG.TITLE;
 render();
 if(API) pull().catch(function(){});
-setInterval(function(){ if(!sheetOpen && !busy && API && document.visibilityState==='visible') pull(true).catch(function(){}); }, 15000);
+setInterval(function(){
+  if(!sheetOpen && !busy && API && document.visibilityState==='visible') pull(true).catch(function(){});
+}, 15000);
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState==='visible' && API && !sheetOpen) pull(true).catch(function(){});
 });
