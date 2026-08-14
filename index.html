@@ -575,6 +575,10 @@ function openK(k){
 function openMatch(m){
   draft = { type:m.type, key:m.key, a:m.a, b:m.b, bo:m.bo, lab:m.lab,
             gs: JSON.parse(JSON.stringify(m.gs||[])) };
+  // balls left is always a number; anything saved before this rule becomes 0
+  draft.gs = draft.gs.map(function(x){
+    return x ? { w:x.w, b:(typeof x.b==='number') ? x.b : 0 } : null;
+  });
   while(draft.gs.length < draft.bo) draft.gs.push(null);
   draft.gs.length = draft.bo;
   sheetOpen = true;
@@ -601,10 +605,8 @@ function drawSheet(){
   for(var k=0;k<d.bo;k++){
     var off = decidedBefore(d.gs,k,d.bo);
     var x = d.gs[k];
-    var missing = !!x && typeof x.b !== 'number';
-    h+='<div class="gblock'+(off?' off':'')+(missing?' warn':'')+'">';
-    h+='<div class="glab"><span>Game '+(k+1)+(off?' — not needed':'')+'</span>'+
-       (missing?'<span class="w">balls not set · counts as 0</span>':'')+'</div>';
+    h+='<div class="gblock'+(off?' off':'')+'">';
+    h+='<div class="glab"><span>Game '+(k+1)+(off?' — not needed':'')+'</span></div>';
     h+='<div class="two">'+
        '<button class="pbtn'+(x&&x.w===0?' on':'')+'" '+(off?'disabled':'')+' onclick="pickW('+k+',0)">'+esc(d.a)+'</button>'+
        '<button class="pbtn'+(x&&x.w===1?' on':'')+'" '+(off?'disabled':'')+' onclick="pickW('+k+',1)">'+esc(d.b)+'</button>'+
@@ -626,36 +628,28 @@ function drawSheet(){
 }
 function pickW(k,w){
   var x = draft.gs[k];
-  if(x && x.w===w) draft.gs[k]=null;
-  else draft.gs[k] = { w:w, b:(x && typeof x.b==='number') ? x.b : null };
+  if(x && x.w===w) draft.gs[k]=null;                    // tap the same name again to undo
+  else draft.gs[k] = { w:w, b:(x && typeof x.b==='number') ? x.b : 0 };   // balls default to 0
   for(var i=0;i<draft.bo;i++) if(decidedBefore(draft.gs,i,draft.bo)) draft.gs[i]=null;
   drawSheet();
 }
 function pickB(k,n){
   if(!draft.gs[k]) return;
-  draft.gs[k].b = (draft.gs[k].b===n) ? null : n;
+  if(draft.gs[k].b === n) return;                       // never leaves the value unset
+  draft.gs[k].b = n;
   drawSheet();
 }
 function saveMatch(){
   var d = draft;
-  var missing = [];
-  d.gs.forEach(function(x,k){ if(x && typeof x.b !== 'number') missing.push(k+1); });
   var gs = d.gs.filter(Boolean).map(function(x){ return { w:x.w, b:(typeof x.b==='number')?x.b:0 }; });
   var t = tally(gs);
-
-  if(missing.length){
-    var lab = missing.length===1 ? 'Game '+missing[0]+' has'
-            : 'Games '+missing.slice(0,-1).join(', ')+' and '+missing[missing.length-1]+' have';
-    if(!confirm(lab+' no "balls left" recorded.\n\nThey will be saved as 0, which counts as a clean sweep '+
-                'and affects ball difference in the tie-breaks.\n\nSave anyway?')) return;
-  }
   if(gs.length && !(t[0]>=need(d.bo) || t[1]>=need(d.bo))){
     if(!confirm('This match isn’t finished — it needs '+need(d.bo)+' game wins.\n\nSave the progress so far?')) return;
   }
   var params = d.type==='g'
     ? { action:'match', key:d.key, games:JSON.stringify(gs) }
     : { action:'ko', key:d.key, p:JSON.stringify([d.a,d.b]), games:JSON.stringify(gs) };
-  push(params).then(function(){ closeSheet(); toast(missing.length?'Saved (missing balls counted as 0)':'Saved'); });
+  push(params).then(function(){ closeSheet(); toast('Saved'); });
 }
 function clearMatch(){
   if(!confirm('Clear this match result?')) return;
