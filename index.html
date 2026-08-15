@@ -32,6 +32,13 @@ header{position:sticky;top:0;z-index:30;background:var(--bg);padding:14px 12px 0
 .htop{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto}
 .htop h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.2px;flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htop h1::before {
+  content: "🎱";
+  margin-right: 7px;
+}
+.dot {
+  display: none;
+}
 .event-date{max-width:640px;margin:1px auto 0;padding-left:17px;color:var(--mut);font-size:12px}
 .rulesnav{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:640px;
   margin:9px auto 0;padding:9px 11px;border:1px solid var(--grn-b);border-radius:9px;
@@ -463,9 +470,8 @@ function render(){
 }
 
 function rulesHtml(){
-  return '<div class="card rules-intro">'+
-    '<h2>LVTS 8-Ball Tournament Rules</h2>'+
-    '<div class="muted">Quick reference for match play, rankings and conduct.</div></div>'+
+  return '<div >'+
+    '<h2>LVTS 8-Ball Tournament Rules</h2></div>'+
 
     '<div class="rules-grid">'+
       ruleCard(1,'Tournament format','<ul class="rule-list">'+
