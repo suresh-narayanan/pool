@@ -32,12 +32,19 @@ header{position:sticky;top:0;z-index:30;background:var(--bg);padding:14px 12px 0
 .htop{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto}
 .htop h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.2px;flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-date{max-width:640px;margin:1px auto 0;padding-left:17px;color:var(--mut);font-size:12px}
+.rulesnav{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:640px;
+  margin:9px auto 0;padding:9px 11px;border:1px solid var(--grn-b);border-radius:9px;
+  background:var(--grn-l);color:var(--grn);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.rulesnav span{font-size:11px;font-weight:600;opacity:.75}
+.rulesnav.on{background:var(--grn);border-color:var(--grn);color:#fff}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex:none}
 .dot.ok{background:var(--grn)} .dot.err{background:var(--red)}
 .iconbtn{border:none;background:none;font-size:19px;padding:4px 6px;cursor:pointer;color:var(--mut);line-height:1}
-.tabs{display:flex;gap:2px;max-width:640px;margin:10px auto 0;overflow-x:auto;scrollbar-width:none}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) minmax(78px,1.35fr);gap:2px;
+  max-width:640px;margin:6px auto 0}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:1 0 auto;min-width:54px;border:none;background:none;padding:9px 8px 10px;font:inherit;font-size:14px;
+.tab{min-width:0;border:none;background:none;padding:9px 5px 10px;font:inherit;font-size:14px;
   font-weight:600;color:var(--mut);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
 .tab.on{color:var(--grn);border-bottom-color:var(--grn)}
 .tab .lk{opacity:.5}
@@ -72,6 +79,7 @@ td{padding:8px 3px;text-align:right;border-top:1px solid var(--line2)}
 td.l{text-align:left}
 td.pos{color:var(--dim);width:16px;text-align:left;font-size:12px}
 td.nm{font-weight:600;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mobile-stats{display:none}
 tr.top td{background:var(--grn-l)}
 tr.qual td{background:#f4f8fc}
 td.pts{font-weight:800}
@@ -150,6 +158,22 @@ td.pts{font-weight:800}
   border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
 code{background:#f2f1ee;padding:1px 4px;border-radius:4px;font-size:.9em}
+@media (max-width:520px){
+  header{padding-top:11px}
+  .htop h1{font-size:16px}
+  .event-date{font-size:11.5px}
+  .rulesnav{min-height:40px;margin-top:7px}
+  .tab{font-size:12px;padding:8px 2px 9px}
+  .tab .tabcount{display:block;font-size:10px;line-height:1.05;margin-top:1px}
+  th.col-detail,td.col-detail{display:none}
+  td.nm{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;line-height:1.2;padding-right:8px}
+  .player-name{overflow-wrap:anywhere}
+  td.nm .pill{margin-top:3px}
+  .mobile-stats{display:block;margin-top:3px;color:var(--dim);font-size:9.5px;font-weight:500;white-space:nowrap}
+  .mtop{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+  .mtop .a,.mtop .b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2;overflow-wrap:anywhere}
+  .pbtn{white-space:normal;line-height:1.2;overflow-wrap:anywhere}
+}
 </style>
 </head>
 <body>
@@ -157,10 +181,14 @@ code{background:#f2f1ee;padding:1px 4px;border-radius:4px;font-size:.9em}
 <header>
   <div class="htop">
     <span class="dot" id="dot"></span>
-    <h1 id="title">8-Ball Tournament</h1>
+    <h1 id="title">LVTS 8-Ball Tournament</h1>
     <button class="iconbtn" id="lockBtn" onclick="lockTap()" title="Scoring">🔒</button>
     <button class="iconbtn" onclick="openMenu()" title="Menu">⋯</button>
   </div>
+  <div class="event-date"><time datetime="2026-08-15T17:30:00-07:00">August 15, 2026 · 5:30 PM</time></div>
+  <button class="rulesnav" id="rulesBtn" onclick="setTab('Rules')" aria-pressed="false">
+    <span style="font-size:13px;opacity:1">Tournament rules</span><span>View →</span>
+  </button>
   <div class="tabs" id="tabs"></div>
 </header>
 
@@ -180,18 +208,18 @@ code{background:#f2f1ee;padding:1px 4px;border-radius:4px;font-size:.9em}
    ============================================================ */
 var APP_CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbxWj32UBCUN_DWId_y7Y7xeYgFTmqtLWgpul2qAM0PTFLsCLc0nciLmik6TwEJfWLj9/exec",
-  TITLE: "8-Ball Tournament"
+  TITLE: "LVTS 8-Ball Tournament 2026"
 };
 /* ========================================================== */
 
-var LS = { url:'p8_url', pin:'p8_pin', tab:'p8_tab' };
+var LS = { url:'p8_url', pin:'p8_pin', tab:'p8_tab_v2' };
 var API = localStorage.getItem(LS.url) || APP_CONFIG.API_URL || '';
 var PIN = localStorage.getItem(LS.pin) || '';
 var L   = ['A','B','C','D'];
 var GBO = 3;            // group matches: best of 3
 var KBO = 5;            // semis, final, 3rd place: best of 5
 var S   = null;
-var tab = localStorage.getItem(LS.tab) || 'A';
+var tab = localStorage.getItem(LS.tab) || 'All';
 var busy=false, sheetOpen=false, draft=null, lastRaw='', lastErr='';
 
 /* ---------------- transport: JSONP ---------------- */
@@ -385,9 +413,14 @@ function koProg(t){
 
 /* ---------------- render ---------------- */
 function render(){
-  document.getElementById('title').textContent = (S && S.title) || APP_CONFIG.TITLE;
+  document.getElementById('title').textContent = APP_CONFIG.TITLE;
   document.getElementById('lockBtn').textContent = unlocked() ? '🔓' : '🔒';
   var v = document.getElementById('view'), tb = document.getElementById('tabs');
+  var rb = document.getElementById('rulesBtn');
+  rb.className = 'rulesnav'+(tab==='Rules'?' on':'');
+  rb.setAttribute('aria-pressed',tab==='Rules'?'true':'false');
+
+  if(tab==='Rules' && !S){ tb.innerHTML=''; v.innerHTML=rulesHtml(); return; }
 
   if(!API){ tb.innerHTML=''; v.innerHTML = noApi(); return; }
   if(!S && lastErr){ tb.innerHTML=''; v.innerHTML = errCard(); return; }
@@ -403,12 +436,11 @@ function render(){
   }
 
   var done = groupsDone();
-  tb.innerHTML = ['A','B','C','D','All','KO','Rules'].map(function(t){
+  tb.innerHTML = ['All','A','B','C','D','KO'].map(function(t){
     var lab;
     if(t==='All') lab='All';
     else if(t==='KO') lab = 'Knockout' + (done?'':' <span class="lk">🔒</span>');
-    else if(t==='Rules') lab='Rules';
-    else { var c=prog(L.indexOf(t)); lab = t+' <span style="font-weight:500;opacity:.6">'+c[0]+'/'+c[1]+'</span>'; }
+    else { var c=prog(L.indexOf(t)); lab = t+' <span class="tabcount" style="font-weight:500;opacity:.6">'+c[0]+'/'+c[1]+'</span>'; }
     return '<button class="tab'+(tab===t?' on':'')+'" onclick="setTab(\''+t+'\')">'+lab+'</button>';
   }).join('');
 
@@ -419,7 +451,6 @@ function render(){
         (done ? 'Group stage complete' : p[0]+' of '+p[1]+' group matches played')+'</strong>'+
       (busy?'<span class="spin"></span>':'<span class="muted">'+(p[1]?Math.round(p[0]/p[1]*100):0)+'%</span>')+
     '</div><div class="bar"><div style="width:'+(p[1]?p[0]/p[1]*100:0)+'%"></div></div>'+
-    (unlocked()?'':'<div class="muted" style="margin-top:9px">Read-only view. Tap 🔒 to enter the scorer PIN.</div>')+
     '</div>';
 
   var body='';
@@ -428,7 +459,7 @@ function render(){
   else if(tab==='All'){ for(var g=0;g<4;g++) body += groupBlock(g,true); }
   else                body = groupBlock(L.indexOf(tab), false);
 
-  v.innerHTML = head + body;
+  v.innerHTML = (tab==='Rules'?'':head) + body;
 }
 
 function rulesHtml(){
@@ -473,18 +504,19 @@ function groupBlock(gi, compact){
   var st = standings(gi), c = prog(gi), full = c[0]===c[1];
   var h = '<div class="gtitle"><h2>Group '+L[gi]+'</h2><span class="muted">'+c[0]+'/'+c[1]+' played</span></div>';
   h += '<div class="card" style="padding:12px 12px 13px">';
-  h += '<table><tr><th class="l" colspan="2">Player</th><th>P</th><th>W</th><th>L</th><th>Gms</th><th>G±</th><th>B±</th><th>Pts</th></tr>';
+  h += '<table><tr><th class="l" colspan="2">Player</th><th>P</th><th>W</th><th>L</th><th class="col-detail">Gms</th><th class="col-detail">G±</th><th class="col-detail">B±</th><th>Pts</th></tr>';
   st.forEach(function(r,ix){
     var gd=r.gw-r.gl, bd=r.bf-r.ba;
     var cls = full && ix===0 ? ' class="top"' : (full && ix===1 ? ' class="qual"' : '');
     var tagged = full && ix<2
       ? ' <span class="pill'+(ix===1?' q':'')+'">'+(ix===0?'WINNER':'2ND')+'</span>' : '';
     h += '<tr'+cls+'><td class="pos">'+(ix+1)+'</td>'+
-      '<td class="l nm">'+esc(r.n)+tagged+'</td>'+
+      '<td class="l nm"><span class="player-name">'+esc(r.n)+'</span>'+tagged+
+      '<span class="mobile-stats">Gms '+r.gw+'–'+r.gl+' · G± '+(gd>0?'+':'')+gd+' · B± '+(bd>0?'+':'')+bd+'</span></td>'+
       '<td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.l+'</td>'+
-      '<td>'+r.gw+'–'+r.gl+'</td>'+
-      '<td>'+(gd>0?'+':'')+gd+'</td>'+
-      '<td>'+(bd>0?'+':'')+bd+'</td>'+
+      '<td class="col-detail">'+r.gw+'–'+r.gl+'</td>'+
+      '<td class="col-detail">'+(gd>0?'+':'')+gd+'</td>'+
+      '<td class="col-detail">'+(bd>0?'+':'')+bd+'</td>'+
       '<td class="pts">'+r.pts+'</td></tr>';
   });
   h += '</table>';
