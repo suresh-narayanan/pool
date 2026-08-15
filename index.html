@@ -687,9 +687,9 @@ function openMenu(){
   if(unlocked()){
     h+='<button class="b" onclick="redraw()">Re-draw groups</button>';
     h+='<button class="b dng" onclick="wipe()">Delete tournament</button>';
-  }
   h+='<button class="b" onclick="testConn()">Test connection</button>';
   h+='<button class="b" onclick="setApi()">Set server URL</button>';
+  }
   h+='<button class="b" onclick="closeSheet()">Close</button></div>';
   h+='<div class="muted" style="margin-top:12px;font-size:12px;word-break:break-all">'+
      (API? 'Connected to: '+esc(API.slice(0,58))+'…' : 'No server URL set')+'</div>';
