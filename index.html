@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#186a3b">
-<title>8-Ball Tournament</title>
+<title>LVTS 8-Ball Tournament 2026</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%231c1b19'/><circle cx='16' cy='16' r='7' fill='%23fff'/><text x='16' y='21' font-size='11' font-family='Arial' font-weight='bold' text-anchor='middle' fill='%231c1b19'>8</text></svg>">
 <style>
 /* ==== CONFIG IS IN THE SCRIPT BELOW — search for APP_CONFIG ==== */
@@ -76,6 +76,22 @@ tr.top td{background:var(--grn-l)}
 tr.qual td{background:#f4f8fc}
 td.pts{font-weight:800}
 .legend{font-size:11px;color:var(--dim);margin-top:9px;line-height:1.5}
+
+.rules-intro{border-left:4px solid var(--grn);padding-left:13px}
+.rules-intro h2{font-size:18px;line-height:1.2;margin:0 0 5px;letter-spacing:-.2px}
+.rules-grid{display:grid;gap:10px}
+.rule-card{margin:0;padding:14px 15px}
+.rule-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.rule-num{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;flex:none;
+  background:var(--grn-l);border:1px solid var(--grn-b);color:var(--grn);font-size:12px;font-weight:800}
+.rule-head h3{font-size:14px;margin:0;letter-spacing:.1px}
+.rule-list{margin:0;padding-left:18px;color:var(--mut);font-size:13px}
+.rule-list li{padding-left:2px;margin:5px 0}
+.rule-list strong{color:var(--ink)}
+.rule-order{margin:0;padding-left:22px;color:var(--mut);font-size:13px}
+.rule-order li{padding-left:2px;margin:5px 0}
+.rule-callout{margin-top:9px;padding:9px 10px;border-radius:8px;background:var(--amb-l);
+  border:1px solid var(--amb-b);color:var(--amb);font-size:12px;font-weight:600}
 
 .m{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:8px;background:var(--card);
   display:block;width:100%;text-align:left;font:inherit;cursor:pointer}
@@ -387,10 +403,11 @@ function render(){
   }
 
   var done = groupsDone();
-  tb.innerHTML = ['A','B','C','D','All','KO'].map(function(t){
+  tb.innerHTML = ['A','B','C','D','All','KO','Rules'].map(function(t){
     var lab;
     if(t==='All') lab='All';
     else if(t==='KO') lab = 'Knockout' + (done?'':' <span class="lk">🔒</span>');
+    else if(t==='Rules') lab='Rules';
     else { var c=prog(L.indexOf(t)); lab = t+' <span style="font-weight:500;opacity:.6">'+c[0]+'/'+c[1]+'</span>'; }
     return '<button class="tab'+(tab===t?' on':'')+'" onclick="setTab(\''+t+'\')">'+lab+'</button>';
   }).join('');
@@ -406,11 +423,50 @@ function render(){
     '</div>';
 
   var body='';
-  if(tab==='KO')      body = koHtml();
+  if(tab==='Rules')   body = rulesHtml();
+  else if(tab==='KO') body = koHtml();
   else if(tab==='All'){ for(var g=0;g<4;g++) body += groupBlock(g,true); }
   else                body = groupBlock(L.indexOf(tab), false);
 
   v.innerHTML = head + body;
+}
+
+function rulesHtml(){
+  return '<div class="card rules-intro">'+
+    '<h2>LVTS 8-Ball Tournament Rules</h2>'+
+    '<div class="muted">Quick reference for match play, rankings and conduct.</div></div>'+
+
+    '<div class="rules-grid">'+
+      ruleCard(1,'Tournament format','<ul class="rule-list">'+
+        '<li>Players compete in <strong>groups of four</strong>, playing everyone in their group once.</li>'+
+        '<li>Group matches are <strong>best of 3</strong>; the top two in each group advance.</li>'+
+        '<li>The knockout rounds are Quarterfinals, Semifinals and Final, all <strong>best of 5</strong>.</li></ul>')+
+
+      ruleCard(2,'Match format','<ul class="rule-list">'+
+        '<li>Lag to decide the first break; the break alternates after that.</li>'+
+        '<li>First to <strong>2 games</strong> wins a group match. First to <strong>3 games</strong> wins a knockout match.</li></ul>')+
+
+      ruleCard(3,'Break rules','<ul class="rule-list">'+
+        '<li>A Golden Break counts in the <strong>group stage only</strong>.</li>'+
+        '<li>In the knockout stage, an 8-ball made on the break is spotted and the breaker continues.</li>'+
+        '<li>A legal break requires a pocketed ball or at least <strong>4 balls</strong> driven to a cushion.</li>'+
+        '<li>A scratch gives the incoming player ball in hand behind the head string.</li></ul>')+
+
+      ruleCard(4,'Frozen ball','<ul class="rule-list">'+
+        '<li>When the cue ball is frozen to an object ball or rail, the cue ball or any object ball must reach a <strong>different cushion</strong> after contact.</li></ul>')+
+
+      ruleCard(5,'Group rankings','<ol class="rule-order">'+
+        '<li>Matches won</li><li>Games won</li><li>Total remaining balls</li><li>One-game 8-ball tiebreak, with the breaker decided by lag</li></ol>'+ 
+        '<div class="rule-callout">If advancement still cannot be decided, play one 8-ball tiebreak game.</div>')+
+
+      ruleCard(6,'Conduct','<ul class="rule-list">'+
+        '<li>Maintain good sportsmanship at all times.</li>'+
+        '<li>The tournament committee resolves disputes, and its decisions are final.</li></ul>')+
+    '</div>';
+}
+function ruleCard(n,title,body){
+  return '<section class="card rule-card"><div class="rule-head"><span class="rule-num">'+n+'</span>'+
+    '<h3>'+title+'</h3></div>'+body+'</section>';
 }
 
 function groupBlock(gi, compact){
