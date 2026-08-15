@@ -544,20 +544,32 @@ function setupHtml(){
     '<button class="b pri" style="flex:1" onclick="doDraw()">Draw groups</button></div></div>';
 }
 function doDraw(){
-  var p = document.getElementById('names').value.split('\n')
+  var lines = document.getElementById('names').value.split('\n')
     .map(function(s){return s.trim();}).filter(Boolean);
+  var groups=[[],[],[],[]], p=[], invalid=null;
+  lines.forEach(function(line){
+    var match=line.match(/^(.*?)\s+([A-D])$/i);
+    if(!match || !match[1].trim()){ invalid=line; return; }
+    var name=match[1].trim(), group=match[2].toUpperCase();
+    p.push(name); groups[L.indexOf(group)].push(name);
+  });
+  if(invalid){ toast('Use “Player name A”, ending each line with A, B, C, or D'); return; }
   var seen={}, dup=null;
   p.forEach(function(n){ var k=n.toLowerCase(); if(seen[k]) dup=n; seen[k]=1; });
   if(dup){ toast('Duplicate name: '+dup); return; }
   if(p.length<8){ toast('Enter at least 8 players'); return; }
   if(p.length>24){ toast('Maximum 24 players'); return; }
-  push({action:'setup', groups:JSON.stringify(shuffleInto4(p)), title:APP_CONFIG.TITLE})
+  if(groups.some(function(group){ return !group.length; })){ toast('Each group A–D needs at least one player'); return; }
+  push({action:'setup', groups:JSON.stringify(groups), title:APP_CONFIG.TITLE})
     .then(function(){ toast('Groups drawn'); });
 }
 function shuffleInto4(list){
-  var a = list.slice();
-  for(var k=a.length-1;k>0;k--){ var r=Math.floor(Math.random()*(k+1)); var t=a[k]; a[k]=a[r]; a[r]=t; }
-  var g=[[],[],[],[]]; a.forEach(function(n,ix){ g[ix%4].push(n); });
+  var g=[[],[],[],[]], base=Math.floor(list.length/4), extra=list.length%4, offset=0;
+  for(var group=0;group<4;group++){
+    var size=base+(group<extra?1:0);
+    g[group]=list.slice(offset,offset+size);
+    offset+=size;
+  }
   return g;
 }
 
