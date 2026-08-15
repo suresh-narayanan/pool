@@ -538,7 +538,7 @@ function setTab(t){ tab=t; localStorage.setItem(LS.tab,t); render(); window.scro
 function setupHtml(){
   return '<div class="card"><strong>Set up the tournament</strong>'+
     '<div class="muted" style="margin:6px 0 10px">Enter player names, one per line (16–20 works best). '+
-    'They’ll be shuffled and dealt into Groups A–D.</div>'+
+    'They’ll be placed into Groups A–D in the order entered.</div>'+
     '<textarea id="names" placeholder="Suresh&#10;Player 2&#10;Player 3&#10;…"></textarea>'+
     '<div class="rowb" style="margin-top:10px">'+
     '<button class="b pri" style="flex:1" onclick="doDraw()">Draw groups</button></div></div>';
@@ -554,10 +554,20 @@ function doDraw(){
   push({action:'setup', groups:JSON.stringify(shuffleInto4(p)), title:APP_CONFIG.TITLE})
     .then(function(){ toast('Groups drawn'); });
 }
-function shuffleInto4(list){
+/* function shuffleInto4(list){
   var a = list.slice();
   for(var k=a.length-1;k>0;k--){ var r=Math.floor(Math.random()*(k+1)); var t=a[k]; a[k]=a[r]; a[r]=t; }
   var g=[[],[],[],[]]; a.forEach(function(n,ix){ g[ix%4].push(n); });
+  return g;
+} */
+
+function shuffleInto4(list){
+  var g=[[],[],[],[]], base=Math.floor(list.length/4), extra=list.length%4, offset=0;
+  for(var group=0;group<4;group++){
+    var size=base+(group<extra?1:0);
+    g[group]=list.slice(offset,offset+size);
+    offset+=size;
+  }
   return g;
 }
 
